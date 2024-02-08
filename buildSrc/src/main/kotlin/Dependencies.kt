@@ -37,6 +37,7 @@ object Versions {
   const val jacoco = "0.8.7"
   const val json = "20180130"
   const val kotlin = "1.5.10"
+  const val kotlinx = "1.5.0"
   const val leakcanaryAndroid = "2.9.1"
   const val liquidcore = "0.6.2"
   const val material = "1.0.0"
@@ -114,6 +115,7 @@ object Libs {
   const val json = "org.json:json:${Versions.json}"
   const val junit = "junit:junit:${Versions.junit}"
   const val kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
+  const val kotlinx_coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinx}"
   const val kotlin_stdlib_jdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlin}"
   const val kotlin_test_junit = "org.jetbrains.kotlin:kotlin-test-junit:${Versions.kotlin}"
   const val leakcanary_android =

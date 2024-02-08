@@ -16,6 +16,10 @@ import com.android.installreferrer.api.InstallReferrerStateListener
 import com.android.installreferrer.api.ReferrerDetails
 import com.facebook.FacebookSdk
 import com.facebook.internal.instrument.crashshield.AutoHandleExceptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object InstallReferrerUtil {
   private const val IS_REFERRER_UPDATED = "is_referrer_updated"
@@ -34,25 +38,36 @@ object InstallReferrerUtil {
         object : InstallReferrerStateListener {
           @AutoHandleExceptions
           override fun onInstallReferrerSetupFinished(responseCode: Int) {
-            when (responseCode) {
-              InstallReferrerResponse.OK -> {
-                val response: ReferrerDetails =
-                    try {
-                      referrerClient.installReferrer
-                    } catch (e: RemoteException) {
-                      return
+            CoroutineScope(Dispatchers.Main).launch {
+              try {
+                when (responseCode) {
+                  InstallReferrerResponse.OK -> {
+                    val response: ReferrerDetails = withContext(Dispatchers.IO) {
+                      try {
+                        referrerClient.installReferrer
+                      } catch (e: RemoteException) {
+                        null
+                      }
+                    } ?: return@launch
+
+                    val referrerUrl = response.installReferrer
+
+                    if (referrerUrl != null &&
+                            (referrerUrl.contains("fb") || referrerUrl.contains("facebook"))) {
+                      callback.onReceiveReferrerUrl(referrerUrl)
                     }
-                val referrerUrl = response.installReferrer
-                if (referrerUrl != null &&
-                    (referrerUrl.contains("fb") || referrerUrl.contains("facebook"))) {
-                  callback.onReceiveReferrerUrl(referrerUrl)
+                    // Even if we are not interested in the url, there is no reason to update again
+                    updateReferrer()
+                  }
+
+                  InstallReferrerResponse.FEATURE_NOT_SUPPORTED ->
+                    updateReferrer() // No point retrying if feature not supported
+                  InstallReferrerResponse.SERVICE_UNAVAILABLE -> {}
                 }
-                // Even if we are not interested in the url, there is no reason to update again
-                updateReferrer()
               }
-              InstallReferrerResponse.FEATURE_NOT_SUPPORTED ->
-                  updateReferrer() // No point retrying if feature not supported
-              InstallReferrerResponse.SERVICE_UNAVAILABLE -> {}
+              catch (e: Exception) {
+                return@launch
+              }
             }
           }
 

@@ -31,6 +31,7 @@ dependencies {
   implementation(Libs.android_installreferrer)
   implementation(Libs.androidx_core_ktx)
   implementation(Libs.kotlin_stdlib)
+  implementation(Libs.kotlinx_coroutines)
 
   // Unit Tests
   testImplementation(project(":facebook-testutil"))
